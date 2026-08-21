@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: founder_funnel_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-founder}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-founder_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-founder_funnel}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U founder"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: founder_funnel_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://founder:founder_pass@db:5432/founder_funnel
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - ./backend:/app
+      - deck_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: founder_funnel_frontend
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  postgres_data:
+  deck_uploads:
