@@ -27,9 +27,16 @@ export default function RoadmapPage() {
         ))}
       </div>
 
-      <Link to="/">
-        <Button variant="secondary">Back to start</Button>
-      </Link>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Link to="/" className="flex-1">
+          <Button variant="secondary" className="w-full">
+            Back to start
+          </Button>
+        </Link>
+        <Link to="/calculator" className="flex-1">
+          <Button className="w-full">What's your number?</Button>
+        </Link>
+      </div>
     </main>
   );
 }

@@ -16,9 +16,16 @@ export default function CalculatorPage() {
         <DilutionCalculator />
       </div>
 
-      <Link to="/critique">
-        <Button variant="secondary">Back to critique</Button>
-      </Link>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Link to="/critique" className="flex-1">
+          <Button variant="secondary" className="w-full">
+            Back to critique
+          </Button>
+        </Link>
+        <Link to="/roadmap" className="flex-1">
+          <Button className="w-full">See the founder roadmap</Button>
+        </Link>
+      </div>
     </main>
   );
 }
