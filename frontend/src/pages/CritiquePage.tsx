@@ -1,21 +1,73 @@
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import type { Submission } from "../lib/api";
+import { getSubmission, type Submission } from "../lib/api";
+
+type LoadState = "loading" | "not-found" | "error" | "ready";
 
 export default function CritiquePage() {
-  const location = useLocation();
-  const submission = (location.state as { submission?: Submission } | null)?.submission;
+  const { id } = useParams<{ id: string }>();
+  const [submission, setSubmission] = useState<Submission | null>(null);
+  const [state, setState] = useState<LoadState>("loading");
 
-  if (!submission) {
-    return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (!id) {
+      setState("not-found");
+      return;
+    }
+    setState("loading");
+    getSubmission(id)
+      .then((result) => {
+        if (result) {
+          setSubmission(result);
+          setState("ready");
+        } else {
+          setState("not-found");
+        }
+      })
+      .catch(() => setState("error"));
+  }, [id]);
+
+  if (state === "loading") {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-16">
+        <p className="text-white/60">Loading…</p>
+      </main>
+    );
+  }
+
+  if (state === "not-found") {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+        <h1 className="mb-2 text-2xl font-semibold">We couldn't find that submission</h1>
+        <p className="mb-8 text-white/60">
+          The link may be wrong, or the submission may no longer exist.
+        </p>
+        <Link to="/">
+          <Button>Start a new upload</Button>
+        </Link>
+      </main>
+    );
+  }
+
+  if (state === "error" || !submission) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+        <h1 className="mb-2 text-2xl font-semibold">Something went wrong</h1>
+        <p className="mb-8 text-white/60">Please try again in a moment.</p>
+        <Link to="/">
+          <Button>Start a new upload</Button>
+        </Link>
+      </main>
+    );
   }
 
   const facts = [
     { label: "Company", value: submission.company_name ?? "Not detected" },
-    { label: "Sector", value: submission.sector },
-    { label: "Industry", value: submission.industry },
+    { label: "Sector", value: submission.extracted_sector },
+    { label: "Industry", value: submission.extracted_industry },
     { label: "Raise amount", value: submission.raise_amount },
   ];
 
@@ -50,12 +102,12 @@ export default function CritiquePage() {
       </Card>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Link to="/roadmap" className="flex-1">
+        <Link to={`/roadmap/${submission.id}`} className="flex-1">
           <Button variant="secondary" className="w-full">
             See the founder roadmap
           </Button>
         </Link>
-        <Link to="/calculator" className="flex-1">
+        <Link to={`/calculator/${submission.id}`} className="flex-1">
           <Button className="w-full">What's your number?</Button>
         </Link>
       </div>

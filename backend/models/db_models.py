@@ -34,9 +34,10 @@ class Submission(Base):
 
     company_name: Mapped[str | None] = mapped_column(String(255))
     companies_house_number: Mapped[str | None] = mapped_column(String(20))
-    # Founder-selected category from core/sectors.py's config list — distinct from whatever
-    # sector the AI extraction reads off the deck itself (see Extraction.structured_json).
-    sector: Mapped[str | None] = mapped_column(String(100))
+    # Founder-selected category from core/sectors.py's config list. Distinct from
+    # Extraction.structured_json["extracted_sector"], which is whatever sector the AI
+    # extraction reads off the deck itself — the two can disagree.
+    declared_sector: Mapped[str | None] = mapped_column(String(100))
     notes: Mapped[str | None] = mapped_column(Text)
     consent_at: Mapped[datetime | None] = mapped_column(DateTime)
 
@@ -66,6 +67,8 @@ class Document(Base):
     original_filename: Mapped[str] = mapped_column(String(255))
     mime_type: Mapped[str] = mapped_column(String(127))
     size: Mapped[int] = mapped_column(Integer)
+    # A storage-backend-relative key (e.g. "<submission_id>/deck/<uuid>_<filename>"), not
+    # a filesystem path — see services/storage.py. Resolved via StorageBackend.open().
     storage_path: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

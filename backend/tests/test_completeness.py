@@ -11,7 +11,7 @@ def _submission(**overrides) -> Submission:
         version=1,
         company_name=None,
         companies_house_number=None,
-        sector=None,
+        declared_sector=None,
         notes=None,
     )
     defaults.update(overrides)
@@ -31,7 +31,7 @@ def _document(slot: DocumentSlot) -> Document:
 
 
 def test_completeness_reflects_filled_and_missing_fields():
-    submission = _submission(company_name="Acme", sector="FinTech")
+    submission = _submission(company_name="Acme", declared_sector="FinTech")
     documents = [_document(DocumentSlot.deck)]
 
     completeness = compute_completeness(submission, documents)
@@ -39,7 +39,7 @@ def test_completeness_reflects_filled_and_missing_fields():
     assert completeness["optional_fields_filled"] == {
         "company_name": True,
         "companies_house_number": False,
-        "sector": True,
+        "declared_sector": True,
         "notes": False,
     }
     assert completeness["document_slots_filled"] == {

@@ -8,7 +8,7 @@ disk. Real extraction is out of scope for this prototype; see CLAUDE.md.
 
 SAMPLE_EXTRACTION = {
     "company_name": "Acme Robotics",
-    "sector": "Deep Tech",
+    "extracted_sector": "Deep Tech",
     "industry": "Industrial Automation",
     "raise_amount": "£750,000",
     "gap_flags": [

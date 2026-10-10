@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -11,6 +11,10 @@ const STAGES = [
 ];
 
 export default function RoadmapPage() {
+  const { id } = useParams<{ id: string }>();
+  const backTo = id ? `/critique/${id}` : "/";
+  const backLabel = id ? "Back to results" : "Back to start";
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
       <h1 className="mb-1 text-3xl font-semibold">The founder roadmap</h1>
@@ -28,12 +32,12 @@ export default function RoadmapPage() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Link to="/" className="flex-1">
+        <Link to={backTo} className="flex-1">
           <Button variant="secondary" className="w-full">
-            Back to start
+            {backLabel}
           </Button>
         </Link>
-        <Link to="/calculator" className="flex-1">
+        <Link to={id ? `/calculator/${id}` : "/calculator"} className="flex-1">
           <Button className="w-full">What's your number?</Button>
         </Link>
       </div>

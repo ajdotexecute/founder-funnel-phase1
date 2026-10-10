@@ -25,3 +25,11 @@ async def test_documents_submission_slot_unique_constraint(db_engine):
         )
     names = {c["name"] for c in constraints}
     assert "uq_documents_submission_slot" in names
+
+
+async def test_submissions_has_declared_sector_not_sector(db_engine):
+    async with db_engine.connect() as conn:
+        columns = await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_columns("submissions"))
+    names = {c["name"] for c in columns}
+    assert "declared_sector" in names
+    assert "sector" not in names

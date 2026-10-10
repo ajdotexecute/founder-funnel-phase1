@@ -5,6 +5,7 @@ disposable database rather than your dev one). The `apply_migrations` fixture
 IS the migration test: if any migration in alembic/versions is broken, this
 fixture fails and every test fails with it.
 """
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,18 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from core.config import get_settings
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    # Session-scoped rather than pytest-asyncio's function-scoped default: main.app's
+    # real Depends(get_db) uses core.database's module-level `engine` singleton, which
+    # binds to whichever event loop first touches it. A fresh loop per test (the
+    # default) breaks that singleton the same way it broke the earlier db_engine
+    # fixture — one loop for the whole session keeps it consistent throughout.
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session", autouse=True)

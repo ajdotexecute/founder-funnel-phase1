@@ -17,6 +17,9 @@ class Settings(BaseSettings):
 
     max_calculator_attempts: int = 3
 
+    # "local" | "box" (box lands in Checkpoint 5 — see services/storage.py)
+    storage_backend: str = "local"
+
     class Config:
         env_file = str(_ENV_FILE)
         extra = "ignore"
