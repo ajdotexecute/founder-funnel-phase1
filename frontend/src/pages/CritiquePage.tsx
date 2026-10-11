@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { getSubmission, type Submission } from "../lib/api";
+import { API_URL, getSubmission, type Submission } from "../lib/api";
 
 type LoadState = "loading" | "not-found" | "error" | "ready";
 
@@ -64,42 +64,71 @@ export default function CritiquePage() {
     );
   }
 
-  const facts = [
-    { label: "Company", value: submission.company_name ?? "Not detected" },
-    { label: "Sector", value: submission.extracted_sector },
-    { label: "Industry", value: submission.extracted_industry },
-    { label: "Raise amount", value: submission.raise_amount },
-  ];
+  const { extraction, score } = submission;
+
+  const facts = extraction
+    ? [
+        { label: "Company", value: submission.company_name ?? extraction.company ?? "Not detected" },
+        { label: "Sector", value: extraction.extracted_sector },
+        { label: "Stage", value: extraction.stage },
+        { label: "Raise amount", value: extraction.ask_amount },
+      ]
+    : [];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
       <h1 className="mb-1 text-3xl font-semibold">Here's what we read from your deck</h1>
       <p className="mb-8 text-white/60">A statement of facts, not a judgement.</p>
 
-      <Card className="mb-6">
-        <dl className="grid grid-cols-2 gap-4">
-          {facts.map((fact) => (
-            <div key={fact.label}>
-              <dt className="text-xs uppercase tracking-wide text-white/40">{fact.label}</dt>
-              <dd className="mt-1 text-lg">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </Card>
+      {!extraction && (
+        <Card className="mb-8">
+          <p className="text-white/80">
+            We couldn't finish analysing your deck just now
+            {submission.processing_error ? `: ${submission.processing_error}` : "."}
+          </p>
+          <p className="mt-2 text-sm text-white/50">Your upload was saved — you can still explore the roadmap and calculator below.</p>
+        </Card>
+      )}
 
-      <Card className="mb-8">
-        <h2 className="mb-3 text-sm uppercase tracking-wide text-white/40">
-          Questions you need to consider
-        </h2>
-        <ul className="flex flex-col gap-2">
-          {submission.gap_flags.map((flag) => (
-            <li key={flag} className="flex gap-2 text-white/80">
-              <span className="text-steel">–</span>
-              <span>{flag}</span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      {extraction && (
+        <>
+          <Card className="mb-6">
+            <dl className="grid grid-cols-2 gap-4">
+              {facts.map((fact) => (
+                <div key={fact.label}>
+                  <dt className="text-xs uppercase tracking-wide text-white/40">{fact.label}</dt>
+                  <dd className="mt-1 text-lg">{fact.value ?? "—"}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
+
+          <Card className="mb-8">
+            <h2 className="mb-3 text-sm uppercase tracking-wide text-white/40">
+              Questions you need to consider
+            </h2>
+            <ul className="flex flex-col gap-2">
+              {extraction.key_risks.map((risk) => (
+                <li key={risk} className="flex gap-2 text-white/80">
+                  <span className="text-steel">–</span>
+                  <span>{risk}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </>
+      )}
+
+      {score && submission.report_url && (
+        <Card className="mb-8 border-steel/40 bg-steel/10">
+          <p className="mb-3">
+            Full scored assessment: <span className="font-semibold text-steel">{score.overall_score} / 100</span>
+          </p>
+          <a href={`${API_URL}${submission.report_url}`} target="_blank" rel="noreferrer">
+            <Button className="w-full">View full report</Button>
+          </a>
+        </Card>
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Link to={`/roadmap/${submission.id}`} className="flex-1">

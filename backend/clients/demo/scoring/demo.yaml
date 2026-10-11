@@ -1,0 +1,100 @@
+# Neutral demo scoring framework. No client branding or client-specific
+# criteria — this is the default config when CLIENT_ID is unset.
+id: demo
+version: "1"
+name: Neutral Demo Assessment
+
+scale:
+  min: 1
+  max: 10
+
+dimensions:
+  - id: business_fundamentals
+    name: Business fundamentals
+    description: >
+      Whether the core business model, market, and traction hold up to
+      scrutiny — not whether the deck says the right words.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: >
+          Market, traction, or business model claims are vague, unsupported,
+          or contradictory.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: >
+          The fundamentals are present but thinly evidenced — plausible, not
+          yet proven.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: >
+          Market, traction, and business model are specific, evidenced, and
+          internally consistent.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+  - id: investment_case
+    name: Investment case
+    description: >
+      Whether the ask, use of funds, and return potential are coherent and
+      well-supported by the rest of the deck.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: >
+          The ask, use of funds, or path to return is missing, unclear, or
+          inconsistent with the rest of the deck.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: >
+          The investment case is present but leaves an investor with open
+          questions about sizing or use of funds.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: >
+          The ask is specific, justified, and the use of funds maps clearly
+          to the stated milestones.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+  - id: investor_presentation
+    name: Investor presentation
+    description: >
+      Whether the deck itself communicates clearly, concisely, and
+      credibly — independent of how good the underlying business is.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: >
+          Hard to follow, missing key sections, or undermines its own
+          credibility (e.g. unsupported superlatives, inconsistent numbers).
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: >
+          Covers the essentials but is cluttered, uneven in depth, or harder
+          to follow than it needs to be.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: >
+          Clear structure, appropriate depth per section, consistent and
+          credible throughout.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+cta_text: >
+  Want a second pair of eyes on this before you raise? Talk to us.

@@ -1,14 +1,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.db_models import Document, DocumentSlot, Founder, Submission
-from schemas.submission import DocumentSummary, SubmissionResponse
-
-# Identifies the shape of Extraction.structured_json. "1" is the Phase 1/Checkpoint 2
-# stub shape (company_name, extracted_sector, industry, raise_amount, gap_flags,
-# raising_raw) — see services/stub_extractor.py. Checkpoint 3's real extraction
-# schema is a different shape and should bump this.
-STUB_SCHEMA_VERSION = "1"
+from models.db_models import Document, DocumentSlot, Extraction, Founder, Score, Submission
+from schemas.submission import DocumentSummary, DimensionScoreSummary, ExtractionSummary, ScoreSummary, SubmissionResponse
 
 # Submission fields a founder can optionally fill in, used by compute_completeness().
 COMPLETENESS_OPTIONAL_FIELDS = ("company_name", "companies_house_number", "declared_sector", "notes")
@@ -49,8 +43,41 @@ def compute_completeness(submission: Submission, documents: list[Document]) -> d
 
 
 def build_submission_response(
-    submission: Submission, founder: Founder, documents: list[Document], extracted: dict
+    submission: Submission,
+    founder: Founder,
+    documents: list[Document],
+    extraction: Extraction | None,
+    score: Score | None,
+    processing_error: str | None = None,
 ) -> SubmissionResponse:
+    extraction_summary = None
+    if extraction is not None:
+        data = extraction.structured_json
+        extraction_summary = ExtractionSummary(
+            company=data.get("company"),
+            extracted_sector=data.get("extracted_sector"),
+            stage=data.get("stage"),
+            ask_amount=data.get("ask_amount"),
+            use_of_funds=data.get("use_of_funds"),
+            traction_metrics=data.get("traction_metrics", []),
+            team=data.get("team", []),
+            market_size_claims=data.get("market_size_claims", []),
+            revenue_model=data.get("revenue_model"),
+            key_risks=data.get("key_risks", []),
+            companies_house=data.get("companies_house"),
+        )
+
+    score_summary = None
+    if score is not None:
+        score_summary = ScoreSummary(
+            overall_score=score.overall_score,
+            config_id=score.config_id,
+            config_version=score.config_version,
+            dimensions=[
+                DimensionScoreSummary(id=dim_id, **dim_data) for dim_id, dim_data in score.dimension_scores.items()
+            ],
+        )
+
     return SubmissionResponse(
         id=submission.id,
         email=founder.email,
@@ -67,9 +94,8 @@ def build_submission_response(
             )
             for d in documents
         ],
-        extracted_sector=extracted.get("extracted_sector"),
-        extracted_industry=extracted.get("industry"),
-        raise_amount=extracted.get("raise_amount"),
-        gap_flags=extracted.get("gap_flags", []),
-        raising_raw=extracted.get("raising_raw"),
+        extraction=extraction_summary,
+        score=score_summary,
+        report_url=f"/report/{submission.id}" if score is not None else None,
+        processing_error=processing_error,
     )

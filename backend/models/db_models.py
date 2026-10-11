@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -76,7 +76,11 @@ class Document(Base):
 
 
 class Extraction(Base):
-    """A structured read of a submission's documents. See services/stub_extractor.py — still stubbed."""
+    """
+    A structured read of a submission's documents. schema_version "1" was the Phase
+    1/Checkpoint 2 hardcoded stub shape; "2" (Checkpoint 3) is the real two-stage
+    Claude pipeline's fixed schema — see services/claude_client.py.
+    """
 
     __tablename__ = "extractions"
 
@@ -90,7 +94,7 @@ class Extraction(Base):
 
 
 class Score(Base):
-    """Output of scoring an extraction against a named, versioned config. Not populated until Checkpoint 3."""
+    """Output of scoring an extraction against a named, versioned config (clients/<id>/scoring/*.yaml)."""
 
     __tablename__ = "scores"
 
@@ -98,7 +102,35 @@ class Score(Base):
     submission_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("submissions.id"), index=True)
     config_id: Mapped[str] = mapped_column(String(100))
     config_version: Mapped[str] = mapped_column(String(20))
+    # Per-dimension {id: {score, label, rag, evidence, feedback}} — NOT the overall
+    # score, which is its own column since it's a single derived number, not a blob.
     dimension_scores: Mapped[dict] = mapped_column(JSONB)
+    overall_score: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     submission: Mapped["Submission"] = relationship(back_populates="scores")
+
+
+class ModelCallStage(str, enum.Enum):
+    extract = "extract"
+    score = "score"
+
+
+class ModelCall(Base):
+    """
+    Raw log of every AI call, admin-only (no endpoint exposes this yet — Checkpoint
+    4 adds the admin view and the cost-per-call calculation on top of the token
+    counts already captured here).
+    """
+
+    __tablename__ = "model_calls"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    submission_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("submissions.id"), index=True)
+    stage: Mapped[ModelCallStage] = mapped_column(SAEnum(ModelCallStage, name="model_call_stage"))
+    model: Mapped[str] = mapped_column(String(100))
+    input_tokens: Mapped[int] = mapped_column(Integer)
+    output_tokens: Mapped[int] = mapped_column(Integer)
+    latency_ms: Mapped[int] = mapped_column(Integer)
+    raw_response: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

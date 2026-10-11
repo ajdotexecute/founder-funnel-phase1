@@ -1,14 +1,17 @@
 """
 Founder Funnel — FastAPI backend (generic assessment engine, Phase A).
 
-Extraction is still STUBBED (Checkpoint 3 replaces this). See
-services/stub_extractor.py and CLAUDE.md.
+Extraction and scoring are real as of Checkpoint 3 (two Claude API calls per
+submission — see services/claude_client.py and services/pipeline.py), run
+against the client's scoring config (services/client_config.py). See
+CLAUDE.md for what's still not built.
 """
 import uuid
 from datetime import datetime
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -16,17 +19,14 @@ from sqlalchemy.orm import selectinload
 from core.config import get_settings
 from core.database import get_db
 from core.sectors import get_sectors
-from models.db_models import Document, DocumentSlot, Extraction, Submission
+from models.db_models import Document, DocumentSlot, Submission
 from schemas.submission import SubmissionResponse
+from services.client_config import load_scoring_config
 from services.file_validation import MIME_TYPES, sniff_kind, validate_companies_house_number
+from services.pipeline import run_pipeline
+from services.report import build_report_context, render_report_html, render_report_pdf
 from services.storage import get_storage_backend
-from services.stub_extractor import extract_from_deck
-from services.submissions import (
-    STUB_SCHEMA_VERSION,
-    build_submission_response,
-    get_or_create_founder,
-    next_version_for_founder,
-)
+from services.submissions import build_submission_response, get_or_create_founder, next_version_for_founder
 
 settings = get_settings()
 
@@ -137,7 +137,7 @@ async def create_submission(
         consent_at=datetime.utcnow(),
     )
     db.add(submission)
-    await db.flush()  # assigns submission.id for the Document/Extraction FKs below
+    await db.flush()  # assigns submission.id for the Document FKs below
 
     storage = get_storage_backend()
     documents: list[Document] = []
@@ -156,23 +156,33 @@ async def create_submission(
         db.add(document)
         documents.append(document)
 
-    deck_filename = validated[DocumentSlot.deck][1] if DocumentSlot.deck in validated else None
-    extracted = extract_from_deck(deck_filename)
-    db.add(Extraction(submission_id=submission.id, structured_json=extracted, schema_version=STUB_SCHEMA_VERSION))
+    result = await run_pipeline(submission, documents, storage)
+    if result.extraction is not None:
+        db.add(result.extraction)
+    if result.score is not None:
+        db.add(result.score)
+    for call in result.model_calls:
+        db.add(call)
 
     await db.commit()
 
-    return build_submission_response(submission, founder, documents, extracted)
+    return build_submission_response(submission, founder, documents, result.extraction, result.score, result.error)
 
 
 @app.get("/api/submissions/{submission_id}", response_model=SubmissionResponse)
 async def get_submission(submission_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    submission, founder, documents, extraction, score = await _load_submission(submission_id, db)
+    return build_submission_response(submission, founder, documents, extraction, score)
+
+
+async def _load_submission(submission_id: uuid.UUID, db: AsyncSession):
     result = await db.execute(
         select(Submission)
         .options(
             selectinload(Submission.founder),
             selectinload(Submission.documents),
             selectinload(Submission.extractions),
+            selectinload(Submission.scores),
         )
         .where(Submission.id == submission_id)
     )
@@ -180,7 +190,34 @@ async def get_submission(submission_id: uuid.UUID, db: AsyncSession = Depends(ge
     if not submission:
         raise HTTPException(404, "Submission not found")
 
-    latest_extraction = max(submission.extractions, key=lambda e: e.created_at, default=None)
-    extracted = latest_extraction.structured_json if latest_extraction else {}
+    extraction = max(submission.extractions, key=lambda e: e.created_at, default=None)
+    score = max(submission.scores, key=lambda s: s.created_at, default=None)
+    return submission, submission.founder, submission.documents, extraction, score
 
-    return build_submission_response(submission, submission.founder, submission.documents, extracted)
+
+@app.get("/report/{submission_id}", response_class=HTMLResponse)
+async def get_report_html(submission_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    submission, _founder, _documents, extraction, score = await _load_submission(submission_id, db)
+    if extraction is None or score is None:
+        raise HTTPException(404, "No report available for this submission yet.")
+
+    config = load_scoring_config(framework_id=score.config_id)
+    context = build_report_context(submission, extraction, score, config)
+    return render_report_html(context)
+
+
+@app.get("/report/{submission_id}/pdf")
+async def get_report_pdf(submission_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    submission, _founder, _documents, extraction, score = await _load_submission(submission_id, db)
+    if extraction is None or score is None:
+        raise HTTPException(404, "No report available for this submission yet.")
+
+    config = load_scoring_config(framework_id=score.config_id)
+    context = build_report_context(submission, extraction, score, config)
+    html = render_report_html(context)
+    pdf_bytes = await render_report_pdf(html)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="report-{submission_id}.pdf"'},
+    )

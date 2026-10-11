@@ -1,10 +1,46 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export interface DocumentSummary {
   slot: "deck" | "forecast" | "one_pager";
   filename: string;
   size: number;
   mime_type: string;
+}
+
+export interface MarketSizeClaim {
+  claim: string;
+  stated_basis: string;
+}
+
+export interface ExtractionSummary {
+  company: string | null;
+  extracted_sector: string | null;
+  stage: string | null;
+  ask_amount: string | null;
+  use_of_funds: string | null;
+  traction_metrics: string[];
+  team: string[];
+  market_size_claims: MarketSizeClaim[];
+  revenue_model: string | null;
+  key_risks: string[];
+  companies_house: Record<string, unknown> | null;
+}
+
+export interface DimensionScoreSummary {
+  id: string;
+  name: string;
+  score: number;
+  label: string;
+  rag: "red" | "amber" | "green";
+  evidence: string;
+  feedback: string[];
+}
+
+export interface ScoreSummary {
+  overall_score: number;
+  config_id: string;
+  config_version: string;
+  dimensions: DimensionScoreSummary[];
 }
 
 export interface Submission {
@@ -18,11 +54,10 @@ export interface Submission {
   consent_at: string | null;
   created_at: string;
   documents: DocumentSummary[];
-  extracted_sector: string | null;
-  extracted_industry: string | null;
-  raise_amount: string | null;
-  gap_flags: string[];
-  raising_raw: string | null;
+  extraction: ExtractionSummary | null;
+  score: ScoreSummary | null;
+  report_url: string | null;
+  processing_error: string | null;
 }
 
 export interface FieldErrors {

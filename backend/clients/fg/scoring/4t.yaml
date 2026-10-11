@@ -1,0 +1,104 @@
+# SCAFFOLD ONLY — placeholder dimensions. Per the Phase A brief: "I will
+# supply the dimension names, what each checks and how they are banded,
+# from the reference report in clients/fg/reference/. Until then, scaffold
+# it with four placeholder dimensions and stop to ask me for the content.
+# Do not invent the criteria."
+#
+# Do not treat this file's dimension names, descriptions, or rubric wording
+# as real content — they are deliberately generic placeholders so the config
+# loader and scoring pipeline have something valid to run against before the
+# real 4T criteria are supplied.
+id: 4t
+version: "0-placeholder"
+name: 4T Assessment (placeholder — awaiting real criteria)
+
+scale:
+  min: 1
+  max: 10
+
+dimensions:
+  - id: dimension_1
+    name: Dimension 1 (placeholder)
+    description: Placeholder — real description pending.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: Placeholder rubric band.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: Placeholder rubric band.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: Placeholder rubric band.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+  - id: dimension_2
+    name: Dimension 2 (placeholder)
+    description: Placeholder — real description pending.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: Placeholder rubric band.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: Placeholder rubric band.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: Placeholder rubric band.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+  - id: dimension_3
+    name: Dimension 3 (placeholder)
+    description: Placeholder — real description pending.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: Placeholder rubric band.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: Placeholder rubric band.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: Placeholder rubric band.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+  - id: dimension_4
+    name: Dimension 4 (placeholder)
+    description: Placeholder — real description pending.
+    weight: 1
+    rubric:
+      - min_score: 1
+        max_score: 4
+        label: Weak
+        description: Placeholder rubric band.
+      - min_score: 5
+        max_score: 7
+        label: Developing
+        description: Placeholder rubric band.
+      - min_score: 8
+        max_score: 10
+        label: Strong
+        description: Placeholder rubric band.
+    rag_thresholds:
+      red_max: 4
+      amber_max: 7
+
+cta_text: Placeholder CTA — real wording pending.

@@ -10,6 +10,11 @@ frontend/node_modules/
 frontend/dist/
 frontend/tsconfig.tsbuildinfo
 
+# Client-specific reference material (sample reports, criteria notes) — never
+# committed, per the Phase A brief's amended hard constraints.
+backend/clients/*/reference/*
+!backend/clients/*/reference/.gitkeep
+
 # Env
 .env
 

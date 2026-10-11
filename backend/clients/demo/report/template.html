@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>{{ company_name }} — Assessment Report</title>
+<style>
+  :root {
+    --bg: #0A0A0B;
+    --card: #15151a;
+    --border: rgba(255,255,255,0.1);
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.6);
+    --steel: #2C5282;
+    --red: #e05252;
+    --amber: #d9a441;
+    --green: #3fa66c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    padding: 48px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 0 0 4px 0; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+  .headline {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .headline .score { font-size: 48px; font-weight: 700; color: var(--steel); }
+  .headline .label { color: var(--muted); font-size: 14px; }
+  .section { margin-bottom: 28px; }
+  .section h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .dimension {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+  }
+  .dimension-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .dimension-name { font-weight: 600; }
+  .dimension-score { font-weight: 700; }
+  .rag {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  .rag-red { background: var(--red); }
+  .rag-amber { background: var(--amber); }
+  .rag-green { background: var(--green); }
+  .evidence { font-size: 13px; color: var(--muted); font-style: italic; margin: 6px 0; }
+  .feedback { margin: 6px 0 0 0; padding-left: 18px; font-size: 14px; }
+  .feedback li { margin-bottom: 3px; }
+  ul.plain { padding-left: 18px; margin: 0; }
+  ul.plain li { margin-bottom: 6px; font-size: 14px; }
+  .cta {
+    border: 1px solid var(--steel);
+    background: rgba(44,82,130,0.15);
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>{{ company_name }}</h1>
+    <div class="meta">Assessed against {{ config_name }} · {{ generated_at.strftime("%d %b %Y") }}</div>
+
+    <div class="headline">
+      <div class="score">{{ overall_score }}</div>
+      <div class="label">/ 100 overall</div>
+    </div>
+
+    <div class="section">
+      <h2>Per-dimension scores</h2>
+      {% for dim in dimensions %}
+      <div class="dimension">
+        <div class="dimension-head">
+          <span class="dimension-name"><span class="rag rag-{{ dim.rag }}"></span>{{ dim.name }}</span>
+          <span class="dimension-score">{{ dim.score }} / {{ dim.scale_max }} — {{ dim.label }}</span>
+        </div>
+        <div class="evidence">&ldquo;{{ dim.evidence }}&rdquo;</div>
+        <ul class="feedback">
+          {% for point in dim.feedback %}
+          <li>{{ point }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if working %}
+    <div class="section">
+      <h2>What's working</h2>
+      <ul class="plain">
+        {% for item in working %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if to_fix %}
+    <div class="section">
+      <h2>What to fix first</h2>
+      <ul class="plain">
+        {% for item in to_fix %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if data_gaps %}
+    <div class="section">
+      <h2>Data gaps / risks flagged</h2>
+      <ul class="plain">
+        {% for item in data_gaps %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="cta">{{ cta_text }}</div>
+  </div>
+</body>
+</html>

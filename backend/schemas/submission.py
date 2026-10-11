@@ -14,6 +14,42 @@ class DocumentSummary(BaseModel):
         from_attributes = True
 
 
+class MarketSizeClaim(BaseModel):
+    claim: str
+    stated_basis: str
+
+
+class ExtractionSummary(BaseModel):
+    company: str | None = None
+    extracted_sector: str | None = None
+    stage: str | None = None
+    ask_amount: str | None = None
+    use_of_funds: str | None = None
+    traction_metrics: list[str] = []
+    team: list[str] = []
+    market_size_claims: list[MarketSizeClaim] = []
+    revenue_model: str | None = None
+    key_risks: list[str] = []
+    companies_house: dict | None = None
+
+
+class DimensionScoreSummary(BaseModel):
+    id: str
+    name: str
+    score: int
+    label: str
+    rag: str
+    evidence: str
+    feedback: list[str]
+
+
+class ScoreSummary(BaseModel):
+    overall_score: float
+    config_id: str
+    config_version: str
+    dimensions: list[DimensionScoreSummary]
+
+
 class SubmissionResponse(BaseModel):
     id: uuid.UUID
     email: str
@@ -26,13 +62,10 @@ class SubmissionResponse(BaseModel):
     created_at: datetime
     documents: list[DocumentSummary]
 
-    # Still from the stub extraction (Checkpoint 3 replaces this) — distinct from
-    # declared_sector above, see Submission.declared_sector's comment.
-    extracted_sector: str | None
-    extracted_industry: str | None
-    raise_amount: str | None
-    gap_flags: list[str]
-    raising_raw: str | None
+    extraction: ExtractionSummary | None = None
+    score: ScoreSummary | None = None
+    report_url: str | None = None
+    processing_error: str | None = None
 
     class Config:
         from_attributes = True

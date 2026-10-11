@@ -5,6 +5,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Report PDF generation (services/report.py) uses Playwright's print-to-PDF —
+# --with-deps installs the matching Chromium build plus whatever system
+# libraries that build needs on this image.
+RUN playwright install --with-deps chromium
+
 COPY . .
 
 RUN mkdir -p /app/uploads

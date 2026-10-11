@@ -20,6 +20,17 @@ class Settings(BaseSettings):
     # "local" | "box" (box lands in Checkpoint 5 — see services/storage.py)
     storage_backend: str = "local"
 
+    # Unset -> neutral demo config/theme, per the amended hard constraints.
+    client_id: str = "demo"
+
+    anthropic_api_key: str = ""
+    ai_model: str = "claude-sonnet-5-5"
+    ai_timeout_seconds: float = 60.0
+    ai_max_retries: int = 2
+
+    companies_house_api_key: str = ""
+    companies_house_base_url: str = "https://api.company-information.service.gov.uk"
+
     class Config:
         env_file = str(_ENV_FILE)
         extra = "ignore"
