@@ -23,7 +23,14 @@ export interface ExtractionSummary {
   market_size_claims: MarketSizeClaim[];
   revenue_model: string | null;
   key_risks: string[];
-  companies_house: Record<string, unknown> | null;
+}
+
+export interface CompaniesHousePanel {
+  status: "verified" | "not_checked";
+  company_name: string | null;
+  company_status: string | null;
+  incorporation_date: string | null;
+  sic_codes: string[];
 }
 
 export interface DimensionScoreSummary {
@@ -56,6 +63,7 @@ export interface Submission {
   documents: DocumentSummary[];
   extraction: ExtractionSummary | null;
   score: ScoreSummary | null;
+  companies_house: CompaniesHousePanel;
   report_url: string | null;
   processing_error: string | null;
 }

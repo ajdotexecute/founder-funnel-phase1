@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -30,7 +31,20 @@ class ExtractionSummary(BaseModel):
     market_size_claims: list[MarketSizeClaim] = []
     revenue_model: str | None = None
     key_risks: list[str] = []
-    companies_house: dict | None = None
+
+
+class CompaniesHousePanel(BaseModel):
+    """
+    Always present on the response, never an error state — "not_checked" covers
+    no number given, no API key configured, and a failed/not-found lookup alike,
+    per the brief: never show an error, just a friendly not-checked state.
+    """
+
+    status: Literal["verified", "not_checked"] = "not_checked"
+    company_name: str | None = None
+    company_status: str | None = None
+    incorporation_date: str | None = None
+    sic_codes: list[str] = []
 
 
 class DimensionScoreSummary(BaseModel):
@@ -64,6 +78,7 @@ class SubmissionResponse(BaseModel):
 
     extraction: ExtractionSummary | None = None
     score: ScoreSummary | None = None
+    companies_house: CompaniesHousePanel = CompaniesHousePanel()
     report_url: str | None = None
     processing_error: str | None = None
 

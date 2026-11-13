@@ -41,13 +41,14 @@ async def test_successful_lookup_parses_fields(monkeypatch):
         return httpx.Response(
             200,
             request=request,
-            json={"company_status": "active", "date_of_creation": "2020-01-01", "sic_codes": ["62012"]},
+            json={"company_name": "ACME LTD", "company_status": "active", "date_of_creation": "2020-01-01", "sic_codes": ["62012"]},
         )
 
     monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
 
     result = await companies_house.lookup_company("SC123456")
 
+    assert result.company_name == "ACME LTD"
     assert result.status == "active"
     assert result.incorporation_date == "2020-01-01"
     assert result.sic_codes == ["62012"]

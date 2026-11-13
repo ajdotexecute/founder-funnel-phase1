@@ -135,7 +135,7 @@ async def test_companies_house_merged_when_number_present(monkeypatch, storage, 
     monkeypatch.setattr(claude_client, "score_extraction", lambda extraction, config: _async_return(SCORE_RESULT))
 
     async def fake_lookup(number):
-        return companies_house.CompanyInfo(status="active", incorporation_date="2020-01-01", sic_codes=["62012"])
+        return companies_house.CompanyInfo(company_name="Acme Ltd", status="active", incorporation_date="2020-01-01", sic_codes=["62012"])
 
     monkeypatch.setattr(companies_house, "lookup_company", fake_lookup)
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { CompaniesHousePanelCard } from "../components/CompaniesHousePanelCard";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { API_URL, getSubmission, type Submission } from "../lib/api";
@@ -118,6 +119,8 @@ export default function CritiquePage() {
           </Card>
         </>
       )}
+
+      <CompaniesHousePanelCard panel={submission.companies_house} />
 
       {score && submission.report_url && (
         <Card className="mb-8 border-steel/40 bg-steel/10">

@@ -100,6 +100,7 @@ async def run_pipeline(submission: Submission, documents: list[Document], storag
             company_info = await companies_house.lookup_company(submission.companies_house_number)
             if company_info is not None:
                 extraction_data["companies_house"] = {
+                    "company_name": company_info.company_name,
                     "status": company_info.status,
                     "incorporation_date": company_info.incorporation_date,
                     "sic_codes": company_info.sic_codes,

@@ -15,6 +15,10 @@ frontend/tsconfig.tsbuildinfo
 backend/clients/*/reference/*
 !backend/clients/*/reference/.gitkeep
 
+# Client brand assets (logos etc.) — dropped locally, never committed.
+backend/clients/*/assets/*
+!backend/clients/*/assets/.gitkeep
+
 # Env
 .env
 

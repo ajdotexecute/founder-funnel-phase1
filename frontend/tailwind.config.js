@@ -4,11 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#0A0A0B",
-        steel: "#2C5282",
+        // rgb(var(--x) / <alpha-value>) so opacity modifiers (bg-steel/10 etc.)
+        // keep working even though the actual value is set at runtime from the
+        // fetched theme, not fixed at build time — see lib/theme.ts.
+        background: "rgb(var(--color-background) / <alpha-value>)",
+        steel: "rgb(var(--color-accent) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-family)", "system-ui", "sans-serif"],
       },
     },
   },

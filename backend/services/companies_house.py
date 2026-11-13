@@ -22,6 +22,7 @@ MAX_RETRIES = 2
 
 @dataclass
 class CompanyInfo:
+    company_name: str | None
     status: str | None
     incorporation_date: str | None
     sic_codes: list[str]
@@ -69,6 +70,7 @@ async def lookup_company(number: str) -> CompanyInfo | None:
 
             body = response.json()
             return CompanyInfo(
+                company_name=body.get("company_name"),
                 status=body.get("company_status"),
                 incorporation_date=body.get("date_of_creation"),
                 sic_codes=body.get("sic_codes", []),

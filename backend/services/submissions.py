@@ -2,7 +2,14 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.db_models import Document, DocumentSlot, Extraction, Founder, Score, Submission
-from schemas.submission import DocumentSummary, DimensionScoreSummary, ExtractionSummary, ScoreSummary, SubmissionResponse
+from schemas.submission import (
+    CompaniesHousePanel,
+    DimensionScoreSummary,
+    DocumentSummary,
+    ExtractionSummary,
+    ScoreSummary,
+    SubmissionResponse,
+)
 
 # Submission fields a founder can optionally fill in, used by compute_completeness().
 COMPLETENESS_OPTIONAL_FIELDS = ("company_name", "companies_house_number", "declared_sector", "notes")
@@ -51,6 +58,7 @@ def build_submission_response(
     processing_error: str | None = None,
 ) -> SubmissionResponse:
     extraction_summary = None
+    companies_house_panel = CompaniesHousePanel()
     if extraction is not None:
         data = extraction.structured_json
         extraction_summary = ExtractionSummary(
@@ -64,8 +72,16 @@ def build_submission_response(
             market_size_claims=data.get("market_size_claims", []),
             revenue_model=data.get("revenue_model"),
             key_risks=data.get("key_risks", []),
-            companies_house=data.get("companies_house"),
         )
+        ch = data.get("companies_house")
+        if ch:
+            companies_house_panel = CompaniesHousePanel(
+                status="verified",
+                company_name=ch.get("company_name"),
+                company_status=ch.get("status"),
+                incorporation_date=ch.get("incorporation_date"),
+                sic_codes=ch.get("sic_codes", []),
+            )
 
     score_summary = None
     if score is not None:
@@ -96,6 +112,7 @@ def build_submission_response(
         ],
         extraction=extraction_summary,
         score=score_summary,
+        companies_house=companies_house_panel,
         report_url=f"/report/{submission.id}" if score is not None else None,
         processing_error=processing_error,
     )

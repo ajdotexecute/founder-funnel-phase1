@@ -11,7 +11,7 @@ from datetime import datetime
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,7 +21,7 @@ from core.database import get_db
 from core.sectors import get_sectors
 from models.db_models import Document, DocumentSlot, Submission
 from schemas.submission import SubmissionResponse
-from services.client_config import load_scoring_config
+from services.client_config import CLIENTS_DIR, Theme, load_scoring_config, load_theme
 from services.file_validation import MIME_TYPES, sniff_kind, validate_companies_house_number
 from services.pipeline import run_pipeline
 from services.report import build_report_context, render_report_html, render_report_pdf
@@ -56,6 +56,25 @@ async def health():
 @app.get("/api/config/sectors", response_model=list[str])
 async def list_sectors():
     return get_sectors()
+
+
+@app.get("/api/theme", response_model=Theme)
+async def get_theme():
+    return load_theme()
+
+
+@app.get("/client-assets/{client_id}/{filename}")
+async def get_client_asset(client_id: str, filename: str):
+    # Scoped to exactly clients/<client_id>/assets/<filename> — never the rest of
+    # that client's folder (scoring configs, report templates) — and rejects any
+    # path that tries to escape via "..".
+    if "/" in filename or ".." in client_id or ".." in filename:
+        raise HTTPException(404)
+    path = (CLIENTS_DIR / client_id / "assets" / filename).resolve()
+    assets_root = (CLIENTS_DIR / client_id / "assets").resolve()
+    if assets_root not in path.parents or not path.is_file():
+        raise HTTPException(404)
+    return FileResponse(path)
 
 
 def _consent_given(raw: str | None) -> bool:

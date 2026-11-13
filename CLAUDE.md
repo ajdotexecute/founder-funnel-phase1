@@ -61,16 +61,50 @@ anything here as hardened/production-ready without re-reading this file.
   screen; roadmap/calculator carry the id and link back to that same page.
   No email-based lookup on any public endpoint (admin-only, Checkpoint 4).
 - The dilution calculator does real arithmetic (unchanged since Phase 1).
+- **Client theme layer** (pulled forward from Checkpoint 4 for an FG demo):
+  `clients/<id>/theme.json` (primary/secondary/accent/background/text/
+  font_family/product_name/logo_path/footer_text), read at request time by
+  `services/client_config.load_theme()` and served at `GET /api/theme`. The
+  frontend (`lib/theme.ts`, `components/SiteChrome.tsx`) fetches it once and
+  sets CSS custom properties (`--color-background`, `--color-accent`,
+  `--font-family`) that `tailwind.config.js`'s `background`/`steel` colors
+  resolve through — every existing themed class (`bg-steel`, `border-steel/40`
+  etc.) picks it up automatically, no per-component edits. The report template
+  reads the same theme dict server-side. `clients/fg/assets/` (the logo file)
+  is gitignored — dropped locally, never committed; `theme.logo_url` is `null`
+  until a real file is actually on disk at `clients/fg/assets/<logo_path>`,
+  served via a path-traversal-checked route at `GET /client-assets/<id>/<file>`.
+  This is a narrower slice than full Checkpoint 4 theming — no light/dark
+  toggle, no theme editor, just load-and-apply.
+- **Companies House panel**: `SubmissionResponse.companies_house` is always
+  present (never null, never an error shape) — `status: "verified"` with the
+  looked-up company name/status/incorporation date/SIC codes, or
+  `"not_checked"` for every other case (no number, no key, lookup failed) —
+  see `schemas.submission.CompaniesHousePanel` and the same logic mirrored in
+  `services/report.py` for the HTML/PDF report.
+
+**Known rough edge — read before the next FG-branded demo:** running with
+`CLIENT_ID=fg` makes the *report* use `clients/fg/scoring/4t.yaml`, which is
+still the Checkpoint-3 placeholder scaffold (`Dimension 1 (placeholder)` etc.,
+`Placeholder CTA — real wording pending.`). Theme and scoring framework both
+follow `CLIENT_ID` together — there's no way yet to show FG's branding with
+demo's clean three-dimension content instead. Until the real 4T criteria land,
+an FG-branded demo's report will show the literal placeholder dimension names;
+flag that verbally in the room, or switch to `CLIENT_ID=demo` for clean
+content with neutral branding instead.
 
 **Stubbed / not built:**
 - No cost-per-call calculation or admin page (Checkpoint 4 — the token counts
   and raw responses it needs are already captured in `model_calls`).
-- No export, no external scoring API, no client theme layer (`GET /api/theme`
-  doesn't exist yet — the frontend's dark-palette tokens are hardcoded, not
-  read from `theme.json`). All Checkpoint 4.
+- No export, no external scoring API. No light/dark toggle (the app is
+  intentionally dark-only right now; a toggle was always later-checkpoint
+  scope). Full Checkpoint 4 theming (admin-editable, more than the
+  load-and-apply slice built here).
 - No Box backend (Checkpoint 5). No synthetic data pack / demo_runs (Checkpoint 6).
-- `clients/fg/scoring/4t.yaml` and `clients/fg/report/template.html`: FG's
-  real criteria and report layout, pending.
+- `clients/fg/scoring/4t.yaml`: FG's real criteria, pending — see the rough
+  edge above. `clients/fg/report/template.html` exists (a copy of demo's,
+  since the template itself is content-agnostic) but will render whatever
+  placeholder/real dimensions the scoring config currently has.
 
 ### Why Playwright, not WeasyPrint, for the PDF
 
@@ -131,7 +165,8 @@ pytest
   Playwright (report PDFs) + python-pptx/python-docx/openpyxl (document text).
 - Frontend: React + TypeScript + Tailwind + Vite. Design tokens (`#0A0A0B`
   background, `#2C5282` steel-blue accent, Inter) are the neutral demo
-  theme — Checkpoint 4 adds a real client theme layer on top.
+  theme's defaults, now loaded from `GET /api/theme` at runtime (see above)
+  rather than hardcoded.
 
 ## Out of scope for this phase (per the amended brief)
 

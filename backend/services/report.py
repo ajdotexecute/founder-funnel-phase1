@@ -7,11 +7,24 @@ from jinja2 import Template
 from playwright.async_api import async_playwright
 
 from models.db_models import Extraction, Score, Submission
-from services.client_config import load_report_template
+from services.client_config import load_report_template, load_theme
 from services.scoring_schema import ScoringConfig
 
 
 def build_report_context(submission: Submission, extraction: Extraction, score: Score, config: ScoringConfig) -> dict:
+    theme = load_theme()
+    ch = extraction.structured_json.get("companies_house")
+    companies_house_panel = (
+        {
+            "status": "verified",
+            "company_name": ch.get("company_name"),
+            "company_status": ch.get("status"),
+            "incorporation_date": ch.get("incorporation_date"),
+            "sic_codes": ch.get("sic_codes", []),
+        }
+        if ch
+        else {"status": "not_checked"}
+    )
     dimensions = []
     for dim in config.dimensions:
         entry = score.dimension_scores[dim.id]
@@ -46,6 +59,8 @@ def build_report_context(submission: Submission, extraction: Extraction, score: 
         ],
         "cta_text": config.cta_text,
         "extraction": extraction.structured_json,
+        "companies_house": companies_house_panel,
+        "theme": theme,
     }
 
 

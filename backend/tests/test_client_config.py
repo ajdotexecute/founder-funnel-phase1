@@ -1,6 +1,6 @@
 import pytest
 
-from services.client_config import list_frameworks, load_report_template, load_scoring_config
+from services.client_config import list_frameworks, load_report_template, load_scoring_config, load_theme
 
 
 def test_demo_config_loads_and_validates():
@@ -36,6 +36,27 @@ def test_demo_report_template_exists():
     assert "{{ company_name }}" in html
 
 
-def test_fg_report_template_not_yet_scaffolded():
-    with pytest.raises(FileNotFoundError):
-        load_report_template("fg")
+def test_fg_report_template_exists():
+    # Theme-driven and content-agnostic, so it's safe to ship ahead of the real
+    # 4T criteria — it renders whatever dimensions the scoring config returns.
+    html = load_report_template("fg")
+    assert "{{ company_name }}" in html
+
+
+def test_demo_theme_loads_with_neutral_defaults():
+    theme = load_theme("demo")
+    assert theme.product_name == "Founder Funnel"
+    assert theme.logo_url is None
+
+
+def test_fg_theme_loads_placeholder_values():
+    theme = load_theme("fg")
+    assert theme.product_name == "Funding Gap Founder Scan"
+    assert theme.footer_text == "Powered by SentientML"
+    # No real logo.png has been dropped in clients/fg/assets/ in this environment.
+    assert theme.logo_url is None
+
+
+def test_unknown_client_theme_falls_back_to_defaults():
+    theme = load_theme("no-such-client")
+    assert theme.product_name == "Founder Funnel"
