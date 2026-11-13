@@ -12,6 +12,8 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-family)", "system-ui", "sans-serif"],
+        serif: ["var(--font-family-display)", "Georgia", "serif"],
+        mono: ["var(--font-family-mono)", "ui-monospace", "monospace"],
       },
     },
   },

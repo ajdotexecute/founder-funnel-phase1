@@ -9,6 +9,8 @@
   --color-background: 10 10 11; /* #0A0A0B */
   --color-accent: 44 82 130; /* #2C5282 */
   --font-family: "Inter";
+  --font-family-display: "Inter";
+  --font-family-mono: "Inter";
 }
 
 body {

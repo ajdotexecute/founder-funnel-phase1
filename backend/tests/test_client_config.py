@@ -49,10 +49,23 @@ def test_demo_theme_loads_with_neutral_defaults():
     assert theme.logo_url is None
 
 
-def test_fg_theme_loads_placeholder_values():
+def test_demo_theme_fonts_fall_back_to_font_family_when_unset():
+    # demo's theme.json only sets font_family — display/mono should resolve
+    # to the same face rather than staying None.
+    theme = load_theme("demo")
+    assert theme.font_family_display == theme.font_family
+    assert theme.font_family_mono == theme.font_family
+
+
+def test_fg_theme_loads_brand_values():
     theme = load_theme("fg")
     assert theme.product_name == "Funding Gap Founder Scan"
     assert theme.footer_text == "Powered by SentientML"
+    assert theme.background == "#1A3035"
+    assert theme.accent == "#9D8560"
+    assert theme.text == "#F4F1EE"
+    assert theme.font_family_display == "Georgia"
+    assert theme.font_family_mono == "Courier Prime"
     # No real logo.png has been dropped in clients/fg/assets/ in this environment.
     assert theme.logo_url is None
 

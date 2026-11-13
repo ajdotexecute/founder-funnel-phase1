@@ -63,19 +63,36 @@ anything here as hardened/production-ready without re-reading this file.
 - The dilution calculator does real arithmetic (unchanged since Phase 1).
 - **Client theme layer** (pulled forward from Checkpoint 4 for an FG demo):
   `clients/<id>/theme.json` (primary/secondary/accent/background/text/
-  font_family/product_name/logo_path/footer_text), read at request time by
-  `services/client_config.load_theme()` and served at `GET /api/theme`. The
+  font_family/font_family_display/font_family_mono/product_name/logo_path/
+  footer_text), read at request time by `services/client_config.load_theme()`
+  and served at `GET /api/theme`. `font_family_display` (headings) and
+  `font_family_mono` (score/figure digits) are optional — `load_theme()`
+  falls back each to `font_family` when a client's theme.json doesn't set
+  them, so a single-typeface client (demo) only needs the one field. The
   frontend (`lib/theme.ts`, `components/SiteChrome.tsx`) fetches it once and
   sets CSS custom properties (`--color-background`, `--color-accent`,
-  `--font-family`) that `tailwind.config.js`'s `background`/`steel` colors
-  resolve through — every existing themed class (`bg-steel`, `border-steel/40`
-  etc.) picks it up automatically, no per-component edits. The report template
-  reads the same theme dict server-side. `clients/fg/assets/` (the logo file)
-  is gitignored — dropped locally, never committed; `theme.logo_url` is `null`
-  until a real file is actually on disk at `clients/fg/assets/<logo_path>`,
-  served via a path-traversal-checked route at `GET /client-assets/<id>/<file>`.
-  This is a narrower slice than full Checkpoint 4 theming — no light/dark
-  toggle, no theme editor, just load-and-apply.
+  `--font-family`, `--font-family-display`, `--font-family-mono`) that
+  `tailwind.config.js`'s `background`/`steel` colors and `font-sans`/
+  `font-serif`/`font-mono` utilities resolve through — every existing themed
+  class (`bg-steel`, `border-steel/40`, every page's `<h1>`, the critique
+  page's score figure) picks it up automatically, no per-component color/font
+  logic. The report template reads the same theme dict server-side, same
+  font-role split on its `<h1>`/`<h2>` vs. `.score`/`.dimension-score`.
+  `clients/fg/assets/` (the logo file) is gitignored — dropped locally, never
+  committed; `theme.logo_url` is `null` until a real file is actually on disk
+  at `clients/fg/assets/<logo_path>`, served via a path-traversal-checked
+  route at `GET /client-assets/<id>/<file>`. This is a narrower slice than
+  full Checkpoint 4 theming — no light/dark toggle, no theme editor, just
+  load-and-apply. FG's theme.json currently only expresses one mode (dark, on
+  Deep Teal `#1A3035`) even though FG's brand guide defines a light mode too
+  (Paper `#F4F1EE` background) — that's a deliberate deferral, not an
+  oversight: the app has no light/dark switching mechanism yet (see above),
+  so there's nowhere for a second palette to go until that's built. The
+  guide's Platinum (`#C9C1B5`) and Silver (`#E5E0D9`) tones aren't represented
+  in theme.json either — the schema only has five color slots and all five
+  are filled by the guide's primary/secondary/accent/background/text roles;
+  Platinum/Silver would need a schema change (or a dedicated "muted" slot) to
+  use.
 - **Companies House panel**: `SubmissionResponse.companies_house` is always
   present (never null, never an error shape) — `status: "verified"` with the
   looked-up company name/status/incorporation date/SIC codes, or

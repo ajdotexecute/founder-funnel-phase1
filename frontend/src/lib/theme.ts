@@ -10,6 +10,8 @@ export interface Theme {
   background: string;
   text: string;
   font_family: string;
+  font_family_display: string;
+  font_family_mono: string;
   logo_path: string | null;
   footer_text: string | null;
   logo_url: string | null;
@@ -29,6 +31,8 @@ function applyTheme(theme: Theme) {
   if (bg) root.setProperty("--color-background", bg);
   if (accent) root.setProperty("--color-accent", accent);
   root.setProperty("--font-family", theme.font_family);
+  root.setProperty("--font-family-display", theme.font_family_display);
+  root.setProperty("--font-family-mono", theme.font_family_mono);
 }
 
 export function useTheme(): Theme | null {

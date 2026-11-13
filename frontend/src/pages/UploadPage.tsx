@@ -72,7 +72,7 @@ export default function UploadPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6 py-16">
-      <h1 className="mb-2 text-3xl font-semibold">Founder Funnel</h1>
+      <h1 className="mb-2 font-serif text-3xl font-semibold">Founder Funnel</h1>
       <p className="mb-8 text-white/60">
         Upload your pitch deck. We'll pull out the basics and show you where the gaps are.
       </p>

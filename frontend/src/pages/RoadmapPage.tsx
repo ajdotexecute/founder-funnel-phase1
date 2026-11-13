@@ -17,7 +17,7 @@ export default function RoadmapPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <h1 className="mb-1 text-3xl font-semibold">The founder roadmap</h1>
+      <h1 className="mb-1 font-serif text-3xl font-semibold">The founder roadmap</h1>
       <p className="mb-8 text-white/60">
         A general guide to the funding journey. Not personalised to your numbers.
       </p>

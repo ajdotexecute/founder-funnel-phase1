@@ -1,11 +1,13 @@
 {
   "product_name": "Funding Gap Founder Scan",
-  "primary": "#1A3A5C",
-  "secondary": "#F2A900",
-  "accent": "#1A3A5C",
-  "background": "#0A0A0B",
-  "text": "#FFFFFF",
-  "font_family": "Inter",
+  "primary": "#1A3035",
+  "secondary": "#2C5059",
+  "accent": "#9D8560",
+  "background": "#1A3035",
+  "text": "#F4F1EE",
+  "font_family": "Helvetica Neue",
+  "font_family_display": "Georgia",
+  "font_family_mono": "Courier Prime",
   "logo_path": "logo.png",
   "footer_text": "Powered by SentientML"
 }

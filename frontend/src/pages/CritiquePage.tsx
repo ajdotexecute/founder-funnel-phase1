@@ -42,7 +42,7 @@ export default function CritiquePage() {
   if (state === "not-found") {
     return (
       <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
-        <h1 className="mb-2 text-2xl font-semibold">We couldn't find that submission</h1>
+        <h1 className="mb-2 font-serif text-2xl font-semibold">We couldn't find that submission</h1>
         <p className="mb-8 text-white/60">
           The link may be wrong, or the submission may no longer exist.
         </p>
@@ -56,7 +56,7 @@ export default function CritiquePage() {
   if (state === "error" || !submission) {
     return (
       <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
-        <h1 className="mb-2 text-2xl font-semibold">Something went wrong</h1>
+        <h1 className="mb-2 font-serif text-2xl font-semibold">Something went wrong</h1>
         <p className="mb-8 text-white/60">Please try again in a moment.</p>
         <Link to="/">
           <Button>Start a new upload</Button>
@@ -78,7 +78,7 @@ export default function CritiquePage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <h1 className="mb-1 text-3xl font-semibold">Here's what we read from your deck</h1>
+      <h1 className="mb-1 font-serif text-3xl font-semibold">Here's what we read from your deck</h1>
       <p className="mb-8 text-white/60">A statement of facts, not a judgement.</p>
 
       {!extraction && (
@@ -125,7 +125,7 @@ export default function CritiquePage() {
       {score && submission.report_url && (
         <Card className="mb-8 border-steel/40 bg-steel/10">
           <p className="mb-3">
-            Full scored assessment: <span className="font-semibold text-steel">{score.overall_score} / 100</span>
+            Full scored assessment: <span className="font-mono font-semibold text-steel">{score.overall_score} / 100</span>
           </p>
           <a href={`${API_URL}${submission.report_url}`} target="_blank" rel="noreferrer">
             <Button className="w-full">View full report</Button>

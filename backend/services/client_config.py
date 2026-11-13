@@ -24,6 +24,12 @@ class Theme(BaseModel):
     background: str = "#0A0A0B"
     text: str = "#FFFFFF"
     font_family: str = "Inter"
+    # Headings and figures/scores can use a different face than body text.
+    # Resolved to font_family at load time when a client doesn't set them, so
+    # a client.json with just font_family (e.g. demo's) still gets one
+    # consistent typeface everywhere, same as before these fields existed.
+    font_family_display: str | None = None
+    font_family_mono: str | None = None
     logo_path: str | None = None
     footer_text: str | None = None
     # Resolved at load time, not stored in theme.json: None if logo_path is unset,
@@ -71,10 +77,10 @@ def load_scoring_config(client_id: str | None = None, framework_id: str | None =
 def load_theme(client_id: str | None = None) -> Theme:
     resolved_client = client_id or get_client_id()
     path = client_dir(resolved_client) / "theme.json"
-    if not path.is_file():
-        return Theme()  # neutral defaults — never crash the app over a missing theme file
-
-    theme = Theme.model_validate(json.loads(path.read_text()))
+    # Neutral defaults if there's no theme.json — never crash the app over it.
+    theme = Theme.model_validate(json.loads(path.read_text())) if path.is_file() else Theme()
+    theme.font_family_display = theme.font_family_display or theme.font_family
+    theme.font_family_mono = theme.font_family_mono or theme.font_family
     if theme.logo_path:
         logo_file = client_dir(resolved_client) / "assets" / theme.logo_path
         if logo_file.is_file():
