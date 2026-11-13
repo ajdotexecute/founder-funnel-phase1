@@ -1,4 +1,7 @@
-FROM python:3.11-slim
+# Pinned to bookworm (Debian 12), not the floating "slim" tag: Playwright's
+# --with-deps apt package list doesn't support Debian 13 ("trixie") yet, and
+# python:3.11-slim moved to trixie, which breaks the install below.
+FROM python:3.11-slim-bookworm
 
 WORKDIR /app
 
