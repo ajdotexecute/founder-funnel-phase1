@@ -25,6 +25,10 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-founder}:${POSTGRES_PASSWORD:-founder_pass}@db:5432/${POSTGRES_DB:-founder_funnel}
+      # Lets `CLIENT_ID=fg docker compose up` override .env inline, same as
+      # every other var here — without this, env_file: .env was the only way
+      # in, so a shell-level override was silently ignored.
+      CLIENT_ID: ${CLIENT_ID:-demo}
       UPLOAD_DIR: /app/uploads
     volumes:
       - ./backend:/app
