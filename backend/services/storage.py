@@ -32,7 +32,11 @@ class StorageBackend(ABC):
 
 class LocalStorageBackend(StorageBackend):
     def __init__(self, root: Path):
-        self.root = root
+        # Resolved up front: an unresolved relative root (the "./uploads"
+        # default) never equals, or appears in the parents of, the absolute
+        # path _resolve() computes below — every save() would otherwise be
+        # rejected as "escaping root" whenever UPLOAD_DIR isn't absolute.
+        self.root = root.resolve()
         self.root.mkdir(parents=True, exist_ok=True)
 
     def _resolve(self, path: str) -> Path:
